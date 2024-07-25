@@ -4,7 +4,7 @@ import 'package:mobile_scanner_example/barcode_scanner_listview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_simple.dart';
-import 'package:mobile_scanner_example/barcode_scanner_window.dart';
+import 'package:mobile_scanner_example/old/barcode_scanner_window.dart';
 import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
 import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
 

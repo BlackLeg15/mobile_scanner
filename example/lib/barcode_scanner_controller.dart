@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanner_button_widgets.dart';
-import 'package:mobile_scanner_example/scanner_error_widget.dart';
+import 'package:mobile_scanner_example/old/scanner_error_widget.dart';
 
 class BarcodeScannerWithController extends StatefulWidget {
   const BarcodeScannerWithController({super.key});
