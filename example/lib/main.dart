@@ -4,9 +4,10 @@ import 'package:mobile_scanner_example/barcode_scanner_listview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_simple.dart';
-import 'package:mobile_scanner_example/old/barcode_scanner_window.dart';
 import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
 import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
+import 'package:mobile_scanner_example/old/barcode_scanner_window.dart';
+import 'package:mobile_scanner_example/old/fast_barcode_scanner_window.dart';
 
 void main() {
   runApp(
@@ -28,6 +29,30 @@ class MyHome extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            ElevatedButton(
+              onPressed: () {
+                //TODO(adbysantos): Lembrar de colocar WidgetsBindingObserver
+                //TODO(adbysantos): Ver se no Readme do pacote já tem orientações
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => FastBarcodeScannerWithScanWindow(
+                      onScan: (productId) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => Scaffold(
+                              appBar: AppBar(
+                                title: Text('Scan success'),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+              child: const Text('MobileScanner with ScanWindow (Fast)'),
+            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
