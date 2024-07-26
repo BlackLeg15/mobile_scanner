@@ -1,5 +1,12 @@
-class BarcodeScannerInitialState extends BarcodeScannerState {
-  const BarcodeScannerInitialState();
+class BarcodeScannerInitializingState extends BarcodeScannerState {
+  const BarcodeScannerInitializingState();
+}
+
+class BarcodeScannerErrorState extends BarcodeScannerState {
+  const BarcodeScannerErrorState();
+}
+class BarcodeScannerReadingBarcodesState extends BarcodeScannerState {
+  const BarcodeScannerReadingBarcodesState();
 }
 
 class BarcodeScannerSuccessfulReadState extends BarcodeScannerState {

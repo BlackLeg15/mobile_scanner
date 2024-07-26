@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, unnecessary_breaks
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +9,8 @@ import 'package:mobile_scanner_example/bloc/fast_barcode_scanner_bloc.dart';
 import 'package:mobile_scanner_example/bloc/fast_barcode_scanner_event.dart';
 import 'package:mobile_scanner_example/bloc/fast_barcode_scanner_state.dart';
 import 'package:mobile_scanner_example/fast_scanner_button_widgets.dart';
-
 import 'package:mobile_scanner_example/old/scanner_error_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class FastBarcodeScannerWithScanWindow extends StatefulWidget {
   final void Function(String productId) onScan;
@@ -24,13 +24,27 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
   late final MobileScannerController controller;
   late final FastBarcodeScannerBloc bloc;
   bool isReading = false;
+  late final AppLifecycleListener appLifecycleListener;
+
+  Future<void> _onStateChange(AppLifecycleState value) async {
+    switch (value) {
+      case AppLifecycleState.resumed:
+        final status = await Permission.camera.status;
+        if (status != PermissionStatus.granted) {
+          onPermissionDenied();
+        }
+        break;
+      default:
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    appLifecycleListener = AppLifecycleListener(onStateChange: _onStateChange);
     bloc = FastBarcodeScannerBloc();
-    controller = MobileScannerController()
+    controller = MobileScannerController(autoStart: false)
       ..barcodes.listen((barcodeCapture) async {
         if (isReading) {
           return;
@@ -47,46 +61,24 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
         }
         bloc.add(BarcodeScannerSendBarcodeEvent(barcode, (barcode) async => widget.onScan(barcode)));
       });
+    checkCameraPermission();
   }
 
-  Widget _buildBarcodeOverlay() {
-    return ValueListenableBuilder(
-      valueListenable: controller,
-      builder: (context, value, child) {
-        // Not ready.
-        if (!value.isInitialized || !value.isRunning || value.error != null) {
-          return const SizedBox();
-        }
+  Future<void> checkCameraPermission() async {
+    final status = await Permission.camera.status;
+    return switch (status) {
+      PermissionStatus.granted => startScanning(),
+      _ => onPermissionDenied(),
+    };
+  }
 
-        return StreamBuilder<BarcodeCapture>(
-          stream: controller.barcodes,
-          builder: (context, snapshot) {
-            final BarcodeCapture? barcodeCapture = snapshot.data;
+  void startScanning() {
+    bloc.add(const BarcodeScannerStartReadingBarcodesEvent());
+    controller.start();
+  }
 
-            // No barcode.
-            if (barcodeCapture == null || barcodeCapture.barcodes.isEmpty) {
-              return const SizedBox();
-            }
-
-            final scannedBarcode = barcodeCapture.barcodes.first;
-
-            // No barcode corners, or size, or no camera preview size.
-            if (scannedBarcode.corners.isEmpty || value.size.isEmpty || barcodeCapture.size.isEmpty) {
-              return const SizedBox();
-            }
-
-            return CustomPaint(
-              painter: BarcodeOverlay(
-                barcodeCorners: scannedBarcode.corners,
-                barcodeSize: barcodeCapture.size,
-                boxFit: BoxFit.contain,
-                cameraPreviewSize: value.size,
-              ),
-            );
-          },
-        );
-      },
-    );
+  void onPermissionDenied() {
+    //exit screen
   }
 
   Widget _buildScanWindow(Rect scanWindowRect) {
@@ -131,7 +123,6 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
               return ScannerErrorWidget(error: error);
             },
           ),
-          _buildBarcodeOverlay(),
           _buildScanWindow(scanWindow),
           Positioned.fill(
             top: topMargin,
@@ -202,7 +193,9 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
               bloc: bloc,
               builder: (context, state) {
                 return switch (state) {
-                  BarcodeScannerInitialState() => const SizedBox.shrink(),
+                  BarcodeScannerErrorState() => Text('Não foi possível iniciar a leitura de QR Code. \nTente novamente mais tarde.'),
+                  BarcodeScannerInitializingState() => const CircularProgressIndicator(),
+                  BarcodeScannerReadingBarcodesState() => const SizedBox.shrink(),
                   BarcodeScannerSuccessfulReadState() => Container(
                       padding: const EdgeInsets.all(2),
                       decoration: BoxDecoration(
@@ -237,6 +230,7 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
   @override
   Future<void> dispose() async {
     super.dispose();
+    appLifecycleListener.dispose();
     await controller.dispose();
   }
 }
