@@ -3,7 +3,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/bloc/fast_barcode_scanner_bloc.dart';
+import 'package:mobile_scanner_example/bloc/fast_barcode_scanner_event.dart';
+import 'package:mobile_scanner_example/bloc/fast_barcode_scanner_state.dart';
 import 'package:mobile_scanner_example/fast_scanner_button_widgets.dart';
 
 import 'package:mobile_scanner_example/old/scanner_error_widget.dart';
@@ -18,13 +22,21 @@ class FastBarcodeScannerWithScanWindow extends StatefulWidget {
 
 class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWithScanWindow> {
   late final MobileScannerController controller;
+  late final FastBarcodeScannerBloc bloc;
+  bool isReading = false;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    bloc = FastBarcodeScannerBloc();
     controller = MobileScannerController()
-      ..barcodes.listen((barcodeCapture) {
+      ..barcodes.listen((barcodeCapture) async {
+        if (isReading) {
+          return;
+        }
+        isReading = true;
+        await controller.stop();
         final barcodes = barcodeCapture.barcodes;
         if (barcodes.length != 1) {
           return;
@@ -33,7 +45,7 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
         if (barcode == null) {
           return;
         }
-        widget.onScan(barcode);
+        bloc.add(BarcodeScannerSendBarcodeEvent(barcode, (barcode) async => widget.onScan(barcode)));
       });
   }
 
@@ -107,7 +119,6 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
     final topMargin = size.height * 0.1625;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('With Scan window')),
       backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
@@ -159,6 +170,25 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
             ),
           ),
           Positioned.fill(
+            top: 18,
+            left: 12,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                IconButton(
+                  iconSize: 14,
+                  color: Colors.white,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(
+                    Icons.arrow_back_ios_new,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned.fill(
             bottom: size.height * 0.10,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -167,16 +197,38 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
               ],
             ),
           ),
-          // Align(
-          //   alignment: Alignment.bottomCenter,
-          //   child: Container(
-          //     alignment: Alignment.center,
-          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          //     height: 100,
-          //     color: Colors.black.withOpacity(0.4),
-          //     child: ScannedBarcodeLabel(barcodes: controller.barcodes),
-          //   ),
-          // ),
+          Align(
+            child: BlocBuilder<FastBarcodeScannerBloc, BarcodeScannerState>(
+              bloc: bloc,
+              builder: (context, state) {
+                return switch (state) {
+                  BarcodeScannerInitialState() => const SizedBox.shrink(),
+                  BarcodeScannerSuccessfulReadState() => Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.check_circle_rounded,
+                        color: Color(0xFF1A7A1C),
+                        size: 39,
+                      ),
+                    ),
+                  BarcodeScannerRedirectingUserState() => Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                      ),
+                    ),
+                };
+              },
+            ),
+          ),
         ],
       ),
     );

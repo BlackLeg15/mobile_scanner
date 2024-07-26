@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -150,7 +151,43 @@ class FastToggleFlashlightButton extends StatelessWidget {
               },
             );
           case TorchState.unavailable:
-            return InkWell(
+            return !kDebugMode
+                ? const Icon(
+                    Icons.no_flash,
+                    color: Colors.grey,
+                  )
+                : InkWell(
+                    onTap: () {
+                      controller.toggleTorch();
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color.fromRGBO(54, 49, 72, .7),
+                          ),
+                          child: Icon(
+                            Icons.flash_off,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Ligar\nlanterna',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+          case TorchState.on:
+            return GestureDetector(
               onTap: () {
                 controller.toggleTorch();
               },
@@ -169,7 +206,7 @@ class FastToggleFlashlightButton extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Ligar\nlanterna',
+                    'Desligar\nlanterna',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
@@ -180,19 +217,36 @@ class FastToggleFlashlightButton extends StatelessWidget {
                 ],
               ),
             );
-          case TorchState.on:
-            return IconButton(
-              color: Colors.white,
-              iconSize: 32.0,
-              icon: const Icon(Icons.flash_on),
-              onPressed: () async {
-                await controller.toggleTorch();
-              },
-            );
           case TorchState.off:
-            return const Icon(
-              Icons.no_flash,
-              color: Colors.grey,
+            return GestureDetector(
+              onTap: () {
+                controller.toggleTorch();
+              },
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color.fromRGBO(54, 49, 72, .7),
+                    ),
+                    child: Icon(
+                      Icons.flash_on,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Ligar\nlanterna',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             );
         }
       },
