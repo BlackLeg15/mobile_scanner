@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FastQrCodeStartIcon extends StatefulWidget {
-  const FastQrCodeStartIcon({super.key});
+  final VoidCallback goToScanPage;
+  final VoidCallback goToPermissionPage;
+  const FastQrCodeStartIcon({super.key, required this.goToScanPage, required this.goToPermissionPage});
 
   @override
   State<FastQrCodeStartIcon> createState() => _FastQrCodeStartIconState();
@@ -20,9 +21,13 @@ class _FastQrCodeStartIconState extends State<FastQrCodeStartIcon> {
     }
   }
 
-  void goToPermissionPage() {}
+  void goToPermissionPage() {
+    widget.goToPermissionPage();
+  }
 
-  void goToScanPage() {}
+  void goToScanPage() {
+    widget.goToScanPage();
+  }
 
   @override
   Widget build(BuildContext context) {

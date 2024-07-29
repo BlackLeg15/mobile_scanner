@@ -5,6 +5,8 @@ import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_simple.dart';
 import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
+import 'package:mobile_scanner_example/fast/fast_qr_code_camera_permission_page.dart';
+import 'package:mobile_scanner_example/fast/fast_qr_code_start_icon.dart';
 import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
 import 'package:mobile_scanner_example/old/barcode_scanner_window.dart';
 import 'package:mobile_scanner_example/old/fast_barcode_scanner_window.dart';
@@ -29,10 +31,15 @@ class MyHome extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                //TODO(adbysantos): Lembrar de colocar WidgetsBindingObserver
-                //TODO(adbysantos): Ver se no Readme do pacote já tem orientações
+            FastQrCodeStartIcon(
+              goToPermissionPage: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const FastQrCodeCameraPermissionPage(),
+                  ),
+                );
+              },
+              goToScanPage: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => FastBarcodeScannerWithScanWindow(
@@ -41,7 +48,7 @@ class MyHome extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => Scaffold(
                               appBar: AppBar(
-                                title: Text('Scan success'),
+                                title: const Text('Scan success'),
                               ),
                             ),
                           ),
@@ -51,7 +58,6 @@ class MyHome extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text('MobileScanner with ScanWindow (Fast)'),
             ),
             ElevatedButton(
               onPressed: () {
