@@ -32,6 +32,9 @@ class MyHome extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             FastQrCodeStartIcon(
+              whenFarFromAStore: () {
+                
+              },
               goToPermissionPage: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
