@@ -24,6 +24,7 @@ class FastQrCodeStartIcon extends StatefulWidget {
 class _FastQrCodeStartIconState extends State<FastQrCodeStartIcon> {
   late final AppLifecycleListener appLifecycleListener;
   var _hasOpenedSettings = false;
+  var _isLoading = false;
 
   @override
   void initState() {
@@ -44,7 +45,7 @@ class _FastQrCodeStartIconState extends State<FastQrCodeStartIcon> {
           case LocationPermission.whileInUse:
             checkCurrentLocation();
           default:
-          //onPermissionDenied();
+          onPermissionDenied();
         }
       default:
     }
@@ -73,8 +74,7 @@ class _FastQrCodeStartIconState extends State<FastQrCodeStartIcon> {
           _ => false,
         };
       case LocationPermission.deniedForever:
-        _hasOpenedSettings = true;
-        await openAppSettings();
+        _hasOpenedSettings = await openAppSettings();
         return false;
       default:
         return false;
@@ -82,17 +82,23 @@ class _FastQrCodeStartIconState extends State<FastQrCodeStartIcon> {
   }
 
   Future<void> checkCurrentLocation() async {
+    if (_isLoading) {
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+    });
     final isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!isLocationServiceEnabled) {
       final hasEnabledLocationService = await Location.instance.requestService();
       if (!hasEnabledLocationService) {
-        return;
+        return onLocationServiceDisabled();
       }
     }
 
     final hasLocationPermission = await checkLocationPermission();
     if (!hasLocationPermission) {
-      return;
+      return onPermissionDenied();
     }
 
     final currentPosition = await Geolocator.getCurrentPosition();
@@ -104,7 +110,9 @@ class _FastQrCodeStartIconState extends State<FastQrCodeStartIcon> {
       mockLatitude,
       mockLongitude,
     );
-
+    setState(() {
+      _isLoading = false;
+    });
     if (distanceBetween < 200) {
       return widget.whenFarFromAStore();
     }
@@ -119,10 +127,18 @@ class _FastQrCodeStartIconState extends State<FastQrCodeStartIcon> {
     widget.goToScanPage();
   }
 
+  void onPermissionDenied(){
+
+  }
+
+  void onLocationServiceDisabled(){
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: checkCurrentLocation,
+      onPressed: _isLoading ? null : checkCurrentLocation,
       icon: const Icon(
         Icons.qr_code_scanner_sharp,
       ),

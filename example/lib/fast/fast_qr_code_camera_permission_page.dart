@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, unnecessary_breaks
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,6 +13,9 @@ class FastQrCodeCameraPermissionPage extends StatefulWidget {
 
 class _FastQrCodeCameraPermissionPageState extends State<FastQrCodeCameraPermissionPage> {
   late final AppLifecycleListener appLifecycleListener;
+  var _isLoading = false;
+  bool get isLoading => _isLoading;
+  set isLoading(bool value) => setState(() => _isLoading = value);
 
   @override
   void initState() {
@@ -24,6 +27,7 @@ class _FastQrCodeCameraPermissionPageState extends State<FastQrCodeCameraPermiss
     switch (value) {
       case AppLifecycleState.resumed:
         final cameraPermission = await Permission.camera.status;
+        isLoading = false;
         switch (cameraPermission) {
           case PermissionStatus.granted:
             return startScanning();
@@ -35,21 +39,25 @@ class _FastQrCodeCameraPermissionPageState extends State<FastQrCodeCameraPermiss
   }
 
   Future<void> checkCameraPermission() async {
+    isLoading = true;
     final cameraPermission = await Permission.camera.status;
     switch (cameraPermission) {
       case PermissionStatus.granted:
-        return startScanning();
+        startScanning();
+        break;
       case PermissionStatus.permanentlyDenied:
         await openAppSettings();
-        return;
+        break;
       case PermissionStatus.denied:
         final newStatus = await Permission.camera.request();
-        return switch (newStatus) {
+        final _ = switch (newStatus) {
           PermissionStatus.granted => startScanning(),
           _ => onPermissionDenied(),
         };
+        break;
       default:
     }
+    isLoading = false;
   }
 
   void onPermissionDenied() {}
@@ -82,7 +90,7 @@ class _FastQrCodeCameraPermissionPageState extends State<FastQrCodeCameraPermiss
               textAlign: TextAlign.center,
             ),
             ElevatedButton(
-              onPressed: checkCameraPermission,
+              onPressed: isLoading ? null : checkCameraPermission,
               child: Text('Permitir acesso à câmera'),
             ),
           ],
