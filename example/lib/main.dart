@@ -35,7 +35,27 @@ class MyHome extends StatelessWidget {
               goToPermissionPage: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const FastQrCodeCameraPermissionPage(),
+                    builder: (context) => FastQrCodeCameraPermissionPage(
+                      onGrantedPermission: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => FastBarcodeScannerWithScanWindow(
+                              onScan: (productId) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      appBar: AppBar(
+                                        title: const Text('Scan success'),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 );
               },

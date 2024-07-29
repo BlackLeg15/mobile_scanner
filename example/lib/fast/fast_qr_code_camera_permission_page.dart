@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FastQrCodeCameraPermissionPage extends StatefulWidget {
-  const FastQrCodeCameraPermissionPage({super.key});
+  final VoidCallback onGrantedPermission;
+  const FastQrCodeCameraPermissionPage({super.key, required this.onGrantedPermission});
 
   @override
   State<FastQrCodeCameraPermissionPage> createState() => _FastQrCodeCameraPermissionPageState();
@@ -53,7 +54,9 @@ class _FastQrCodeCameraPermissionPageState extends State<FastQrCodeCameraPermiss
 
   void onPermissionDenied() {}
 
-  void startScanning() {}
+  void startScanning() {
+    widget.onGrantedPermission();
+  }
 
   @override
   Widget build(BuildContext context) {
