@@ -236,14 +236,17 @@ class _FastBarcodeScannerWithScanWindowState extends State<FastBarcodeScannerWit
 }
 
 class ScannerOverlay extends CustomPainter {
-  ScannerOverlay(this.scanWindow);
+  const ScannerOverlay(this.scanWindow);
 
   final Rect scanWindow;
 
   @override
   void paint(Canvas canvas, Size size) {
-    // TODO: use `Offset.zero & size` instead of Rect.largest
-    // we need to pass the size to the custom paint widget
+    drawFocus(canvas);
+    drawBorder(canvas);
+  }
+
+  void drawFocus(Canvas canvas) {
     final backgroundPath = Path()..addRect(Rect.largest);
     final cutoutPath = Path()..addRect(scanWindow);
 
@@ -257,7 +260,65 @@ class ScannerOverlay extends CustomPainter {
       backgroundPath,
       cutoutPath,
     );
+
     canvas.drawPath(backgroundWithCutout, backgroundPaint);
+  }
+
+  void drawBorder(Canvas canvas) {
+    final cornerPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 3;
+
+    const cornerSize = 22.0;
+
+    canvas.drawLine(
+      Offset(scanWindow.left - 1, scanWindow.top),
+      Offset(scanWindow.left + cornerSize, scanWindow.top),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      Offset(scanWindow.left, scanWindow.top - 1),
+      Offset(scanWindow.left, scanWindow.top + cornerSize),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      Offset(scanWindow.right + 1, scanWindow.top),
+      Offset(scanWindow.right - cornerSize, scanWindow.top),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      Offset(scanWindow.right, scanWindow.top - 1),
+      Offset(scanWindow.right, scanWindow.top + cornerSize),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      Offset(scanWindow.left - 1, scanWindow.bottom),
+      Offset(scanWindow.left + cornerSize, scanWindow.bottom),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      Offset(scanWindow.left, scanWindow.bottom + 1),
+      Offset(scanWindow.left, scanWindow.bottom - cornerSize),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      Offset(scanWindow.right + 1, scanWindow.bottom),
+      Offset(scanWindow.right - cornerSize, scanWindow.bottom),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      Offset(scanWindow.right, scanWindow.bottom + 1),
+      Offset(scanWindow.right, scanWindow.bottom - cornerSize),
+      cornerPaint,
+    );
   }
 
   @override
